@@ -4,3 +4,10 @@
 [es-other]
 192.168.56.131
 192.168.56.132
+
+[kibana]
+192.168.56.130
+
+[es-all:children]
+es-first
+es-other

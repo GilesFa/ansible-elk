@@ -1,0 +1,8 @@
+- name: Starting Kibana
+  service:
+    name: kibana
+    state: started
+  become: yes
+
+#- name: reset elasticsearch password
+#  shell: 'printf "{{es_password}}\n{{es_password}}" | /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic -i -b -f'

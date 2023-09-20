@@ -1,0 +1,48 @@
+---
+- name: uninstall  elasticsearch
+  gather_facts: false
+  hosts: es-all
+  tags: elasticsearch
+  remote_user: root
+  tasks:
+    - name: remove elasticsearch
+      yum:
+        name: elasticsearch
+        state: absent
+    - name: remove elasticsearch file
+      file:
+        path: /etc/elasticsearch
+        state: absent
+    - name: remove elasticsearch file
+      file:
+        path: /usr/share/elasticsearch
+        state: absent
+    - name: remove elasticsearch file
+      file:
+        path: /esdata
+        state: absent
+
+
+- name: uninstall kibana
+  gather_facts: false
+  hosts: kibana
+  tags: kibana
+  remote_user: root
+  tasks:
+    - name: remove kibana
+      yum:
+        name: kibana
+        state: absent
+    - name: remove kibana file
+      file:
+        path: /etc/kibana
+        state: absent
+    - name: remove kibana file
+      file:
+        path: /usr/share/kibana
+        state: absent
+    - name: remove kibana file
+      file:
+        path: /var/lib/kibana
+        state: absent
+  

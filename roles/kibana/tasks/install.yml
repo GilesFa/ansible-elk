@@ -1,0 +1,28 @@
+- name: "Check {{kibana_version}} exists"
+  stat:
+    path: "/tmp/{{kibana_version}}"
+  register: result
+
+- name: "{{kibana_version}} exist"
+  debug: msg="/tmp/{{kibana_version}} exist"
+  when: result.stat.exists
+
+- name: "{{kibana_version}} doesn't exist"
+  debug: msg="/tmp/{{kibana_version}} doesn't exist"
+  when: not result.stat.exists
+
+- name: "Download {{kibana_version}}"
+  ansible.builtin.get_url:
+    url:  https://artifacts.elastic.co/downloads/kibana/{{kibana_version}}
+    dest: /tmp/{{kibana_version}}
+  when: not result.stat.exists
+  become: yes
+
+- name: "Install {{kibana_version}} from a local file"
+  ansible.builtin.yum:
+    name: /tmp/{{kibana_version}}
+    state: present
+  become: yes
+
+- name: "{{kibana_version}} installed"
+  debug: msg="{{kibana_version}} installed"

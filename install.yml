@@ -1,0 +1,111 @@
+---
+- name: install & start fisrt elasticsearch
+  gather_facts: false
+  hosts: es-first
+  tags: elasticsearch
+  remote_user: root
+  roles:
+    - es-first
+  vars_files:
+    - /root/ansible-learn/install_ES_Cluster/vars_global
+
+
+- name: install other elasticsearch
+  gather_facts: false
+  hosts: es-other
+  tags: elasticsearch
+  remote_user: root
+  roles:
+    - es-other-install
+  vars_files:
+    - /root/ansible-learn/install_ES_Cluster/vars_global
+
+- name: get es token from es-first
+  hosts: es-first
+  tags: elasticsearch
+  tasks:
+    - name: create enrollment-token
+      shell: '/usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s node'
+      register: es_token
+
+    - name: Display command output
+      debug:
+        var: es_token.stdout_lines
+
+    - name: Register es token with variable
+      add_host:
+        name: "es-1st"
+        es_token_var: "{{ es_token.stdout }}"
+
+- name: join es-other to es cluster
+  hosts: es-other
+  tags: elasticsearch
+  tasks:
+    - name: Echo the output - es token variable vaule
+      shell: echo {{ hostvars['es-1st']['es_token_var'] }}
+      register: es_token
+
+    - debug: msg="{{es_token.stdout}}"
+
+    - name: join es cluster
+      shell: 'printf "y\n" | /usr/share/elasticsearch/bin/elasticsearch-reconfigure-node --enrollment-token {{es_token.stdout}}'
+      become: yes
+      ignore_errors: true
+
+- name: setting & start other elasticsearch
+  gather_facts: false
+  hosts: es-other
+  remote_user: root
+  roles:
+    - es-other-setting
+  vars_files:
+    - /root/ansible-learn/install_ES_Cluster/vars_global
+  tags: elasticsearch
+
+- name: install & start kibana
+  gather_facts: false
+  hosts: kibana
+  remote_user: root
+  roles:
+    - kibana
+  vars_files:
+    - /root/ansible-learn/install_ES_Cluster/vars_global
+  tags: kibana
+
+- name: get kibana token from es-first
+  hosts: es-first
+  tags: kibana
+  tasks:
+    - name: create enrollment-token
+      shell: '/usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana'
+      register: kibana_token
+
+    - name: Display command output
+      debug:
+        var: kibana_token.stdout_lines
+
+    - name: Register kibana token with variable
+      add_host:
+        name: "es-1st"
+        kibana_token_var: "{{ kibana_token.stdout }}"
+
+- name: Enroll Kibana to es cluster
+  hosts: kibana
+  tags: kibana
+  tasks:
+    - name: Echo the output - kibana token variable vaule
+      shell: echo {{ hostvars['es-1st']['kibana_token_var'] }}
+      register: kibana_token
+
+    - debug: msg="{{kibana_token.stdout}}"
+
+    - name: exec enrollment-token
+      shell: '/usr/share/kibana/bin/kibana-setup --enrollment-token {{kibana_token.stdout}}'
+      become: yes
+      ignore_errors: true
+
+    - name: restart kibana service
+      service:
+        name: kibana
+        state: restarted
+      become: yes

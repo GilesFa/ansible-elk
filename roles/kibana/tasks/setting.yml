@@ -1,0 +1,8 @@
+- name: set kibana config file
+  lineinfile:
+    destfile: /etc/kibana/kibana.yml
+    regexp: '#server.host: "localhost"'
+    line: 'server.host: "0.0.0.0"'
+    backrefs: no
+  become: yes
+
