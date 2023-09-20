@@ -1,0 +1,28 @@
+- name: Check {{es_version}} exists
+  stat:
+    path: "/tmp/{{es_version}}"
+  register: result
+
+- name: "{{es_version}} exist"
+  debug: msg="/tmp/{{es_version}} exist"
+  when: result.stat.exists
+
+- name: "{{es_version}} doesn't exist"
+  debug: msg="/tmp/{{es_version}} doesn't exist"
+  when: not result.stat.exists
+
+- name: "Download {{es_version}}"
+  ansible.builtin.get_url:
+    url:  https://artifacts.elastic.co/downloads/elasticsearch/{{es_version}}
+    dest: /tmp/{{es_version}}
+  when: not result.stat.exists
+  become: yes
+
+- name: "Install {{es_version}} from a local file"
+  ansible.builtin.yum:
+    name: /tmp/{{es_version}}
+    state: present
+  become: yes
+
+- name: "{{es_version}} installed"
+  debug: msg="{{es_version}} installed"

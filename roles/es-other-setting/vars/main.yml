@@ -1,0 +1,5 @@
+es_version: elasticsearch-8.10.0-x86_64.rpm
+es_cluster_name: es-cluster
+es_password: 111111
+jvm_xms: 1g
+jvm_xmx: 1g

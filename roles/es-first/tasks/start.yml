@@ -1,0 +1,16 @@
+- name: Starting Elasticsearch
+  service:
+    name: elasticsearch
+    state: started
+  become: yes
+
+- name: reset elasticsearch password
+  shell: 'printf "{{es_password}}\n{{es_password}}" | /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic -i -b -f'
+
+- name: curl es
+  shell: 'curl -k -u elastic:{{es_password}} https://127.0.0.1:9200'
+  register: result
+
+- name: Display command output
+  debug:
+    var: result.stdout_lines

@@ -1,0 +1,80 @@
+- name: set es jvm options Xms
+  lineinfile:
+    destfile: /etc/elasticsearch/jvm.options
+    regexp: '## -Xms4g'
+    line: '-Xms{{jvm_xms}}'
+    backrefs: no
+  become: yes
+
+- name: set es jvm options Xmx
+  lineinfile:
+    destfile: /etc/elasticsearch/jvm.options
+    regexp: '## -Xmx4g'
+    line: '-Xmx{{jvm_xmx}}'
+    backrefs: no
+  become: yes
+
+# - name: unmark bootstrap line in config file
+#   lineinfile:
+#     destfile: /etc/elasticsearch/elasticsearch.yml
+#     regexp: '#bootstrap.memory_lock: true'
+#     line: 'bootstrap.memory_lock: true'
+#     backrefs: no
+#   become: yes
+
+- name: set cluster name in config file
+  lineinfile:
+    destfile: /etc/elasticsearch/elasticsearch.yml
+    regexp: '#cluster.name:'
+    line: 'cluster.name: {{es_cluster_name}}'
+    backrefs: no
+  become: yes
+
+- name: set es data path
+  lineinfile:
+    destfile: /etc/elasticsearch/elasticsearch.yml
+    regexp: 'path.data: /var/lib/elasticsearch'
+    line: 'path.data: /esdata/data'
+    backrefs: no
+  become: yes
+
+- name: set es logs path
+  lineinfile:
+    destfile: /etc/elasticsearch/elasticsearch.yml
+    regexp: 'path.logs: /var/log/elasticsearch'
+    line: 'path.logs: /esdata/logs'
+    backrefs: no
+  become: yes
+
+- name: set transport.host
+  lineinfile:
+    destfile: /etc/elasticsearch/elasticsearch.yml
+    regexp: '#transport.host: 0.0.0.0'
+    line: 'transport.host: 0.0.0.0'
+    backrefs: no
+  become: yes
+
+- name: set network.host
+  lineinfile:
+    destfile: /etc/elasticsearch/elasticsearch.yml
+    regexp: '#network.host: 192.168.0.1'
+    line: 'network.host: 0.0.0.0'
+    backrefs: no
+  become: yes
+
+- name: 创建data目录
+  file:
+    path: /esdata/data
+    state: directory
+
+- name: 创建logs目录
+  file:
+    path: /esdata/logs
+    state: directory
+
+- name: 更改/esdata/所有者
+  file:
+    path: /esdata
+    owner: elasticsearch
+    group: elasticsearch
+    recurse: yes

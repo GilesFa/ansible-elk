@@ -1,0 +1,12 @@
+- name: create enrollment-token
+  shell: '/usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s node'
+  register: es_token
+
+- name: Display command output
+  debug:
+    var: es_token.stdout_lines
+
+- name: Register es token with variable
+  add_host:
+    name: "es-1st"
+    es_token_var: "{{ es_token.stdout }}"

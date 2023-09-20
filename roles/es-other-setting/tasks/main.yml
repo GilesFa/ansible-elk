@@ -1,0 +1,3 @@
+- include: setting.yml
+- include: start.yml
+- include: check_es-node.yml

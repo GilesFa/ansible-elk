@@ -1,0 +1,8 @@
+- name: curl es nodes
+  shell: 'curl -k -u elastic:{{es_password}} https://127.0.0.1:9200/_cat/nodes'
+  register: es_nodes
+
+- name: Display es nodes
+  debug:
+    var: es_nodes.stdout_lines
+

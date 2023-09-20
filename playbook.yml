@@ -1,0 +1,50 @@
+---
+- name: install & start fisrt elasticsearch
+  gather_facts: false
+  hosts: es-first
+  remote_user: root
+  roles:
+    - es-first
+
+- name: install other elasticsearch
+  gather_facts: false
+  hosts: es-other
+  remote_user: root
+  roles:
+    - es-other-install
+
+- name: get es token from es-first
+  hosts: es-first
+  tasks:
+    - name: create enrollment-token
+      shell: '/usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s node'
+      register: es_token
+
+    - name: Display command output
+      debug:
+        var: es_token.stdout_lines
+
+    - name: Register es token with variable
+      add_host:
+        name: "es-1st"
+        es_token_var: "{{ es_token.stdout }}"
+
+- name: join es-other to es cluster
+  hosts: es-other
+  tasks:
+    - name: Echo the output - es token variable vaule
+      shell: echo {{ hostvars['es-1st']['es_token_var'] }}
+      register: es_token
+
+    - debug: msg="{{es_token.stdout}}"
+
+    - name: join es cluster
+      shell: 'printf "y\n" | /usr/share/elasticsearch/bin/elasticsearch-reconfigure-node --enrollment-token {{es_token.stdout}}'
+      become: yes
+
+- name: setting & start other elasticsearch
+  gather_facts: false
+  hosts: es-other
+  remote_user: root
+  roles:
+    - es-other-setting
